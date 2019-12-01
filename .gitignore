@@ -32,8 +32,8 @@
 *.lib
 
 # Executables
-!GenerateProjectFile.exe
 *.exe
+!GenerateProjectFile.exe
 *.out
 *.app
 *.ipa
