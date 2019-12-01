@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2018 GalaxySoftware Studio
+// Copyright (C) 2020 GalaxySoftware Studio
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -27,18 +27,16 @@ public class DashEngine : ModuleRules
 {
 	public DashEngine(ReadOnlyTargetRules Target) : base(Target)
 	{
+		PrecompileForTargets = PrecompileTargetsType.Any;
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "AIModule", "PerfCounters", "ApexDestruction", "UnrealEd", "AssetRegistry"});
-
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "AIModule", "PerfCounters", "ApexDestruction", "AssetRegistry"});
 		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore"});
 
-		// Uncomment if you are using Slate UI
-		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
-		
-		// Uncomment if you are using online features
-		// PrivateDependencyModuleNames.Add("OnlineSubsystem");
+		if (Target.Type == TargetRules.TargetType.Editor)
+		{
+			PrivateDependencyModuleNames.AddRange(new string[] { "UnrealEd" });
+		}
 
-		// To include OnlineSubsystemSteam, add it to the plugins section in your uproject file with the Enabled attribute set to true
+		// PrivateDependencyModuleNames.Add("OnlineSubsystem");
 	}
 }
