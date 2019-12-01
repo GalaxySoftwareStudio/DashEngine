@@ -1,4 +1,7 @@
 ![DashEngine](/.github/IMAGES/DashEngine_Banner.png?raw=true "DashEngine")
+
+<h1 align="center">DONT USE THIS UPDATE UNTIL IT IS OFFICIALLY RELEASED</h1>
+
 ## Presentation
 DashEngine is an Unreal Engine 4 Sonic Framework/Devkit who provide all the tools, gimmicks, and gameplay needed to start building awesome (or not...) sonic gameplay based fangames.
 It is shipped with an **Adventure Sonic** gameplay style and a **Modern Sonic** gameplay style. *And with some tweaks you can even create a* ***Classic Sonic*** *gameplay style in a 2.5D world !*
