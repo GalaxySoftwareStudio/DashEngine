@@ -20,13 +20,14 @@ int32 UPlatformFunctions::GetCPUCores()
 {
 	return FWindowsPlatformMisc::NumberOfCores();
 }
-
+#if WITH_EDITOR
 TArray<FAssetData> UPlatformFunctions::GetContentBrowserSelectedItems()
 {
 	TArray<FAssetData> Assets;
 	GEditor->GetContentBrowserSelections(Assets);
 	return Assets;
 }
+#endif
 
 bool UPlatformFunctions::ListAllBlueprintsInPath(FName Path, TArray<UClass*>& Result, UClass* Class)
 {

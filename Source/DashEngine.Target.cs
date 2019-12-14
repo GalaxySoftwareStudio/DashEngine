@@ -8,7 +8,7 @@ public class DashEngineTarget : TargetRules
 	public DashEngineTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Game;
-
-		ExtraModuleNames.AddRange( new string[] { "DashEngine" } );
+        bIWYU = true;
+        ExtraModuleNames.AddRange( new string[] { "DashEngine" } );
 	}
 }

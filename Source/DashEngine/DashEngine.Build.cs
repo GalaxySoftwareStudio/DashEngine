@@ -22,21 +22,20 @@
 ////////////////////////////////////////////////////////////
 
 using UnrealBuildTool;
+using System.Diagnostics;
 
 public class DashEngine : ModuleRules
 {
 	public DashEngine(ReadOnlyTargetRules Target) : base(Target)
 	{
-		PrecompileForTargets = PrecompileTargetsType.Any;
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "AIModule", "PerfCounters", "ApexDestruction", "AssetRegistry"});
-		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore"});
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "AIModule", "PerfCounters", "ApexDestruction", "AssetRegistry" });
+		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
 
-		if (Target.Type == TargetRules.TargetType.Editor)
-		{
-			PrivateDependencyModuleNames.AddRange(new string[] { "UnrealEd" });
-		}
 
-		// PrivateDependencyModuleNames.Add("OnlineSubsystem");
-	}
+        if (Target.bBuildEditor == true)
+        {
+            PrivateDependencyModuleNames.Add("UnrealEd");
+        }
+    }
 }

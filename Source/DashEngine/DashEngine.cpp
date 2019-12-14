@@ -21,8 +21,17 @@
 //
 ////////////////////////////////////////////////////////////
 
-//$VERSION=1.1.0
-//$EDITION=FULL
+#pragma message("Compiling DashEngine 1.1.0...")
+
+#if WITH_EDITOR
+#pragma message("Compiling DashEngine with gameplay and editor features.")
+#else
+#pragma message("Compiling DashEngine with gameplay features only.")
+#endif
+
+#if UE_BUILD_DEBUG || UE_BUILD_DEVELOPMENT
+#pragma message ("DashEngine Debug mode enabled")
+#endif
 
 #include "DashEngine.h"
 #include "Modules/ModuleManager.h"

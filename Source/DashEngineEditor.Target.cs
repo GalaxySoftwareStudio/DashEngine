@@ -8,7 +8,7 @@ public class DashEngineEditorTarget : TargetRules
 	public DashEngineEditorTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Editor;
-
-		ExtraModuleNames.AddRange( new string[] { "DashEngine" } );
+        bIWYU = true;
+        ExtraModuleNames.AddRange( new string[] { "DashEngine" } );
 	}
 }
