@@ -543,7 +543,7 @@ public:
 	/**
 	* Draw in-world debug information for character movement (called with p.VisualizeMovement > 0).
 	*/
-	virtual void VisualizeMovement() const override;
+	//virtual float VisualizeMovement() const override;
 
 protected:
 	/** Enforce constraints on input given current state. For instance, don't move upwards if walking and looking up. */

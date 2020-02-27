@@ -36,7 +36,7 @@ void ADashCharacter::ApplyDamageMomentum(float DamageTaken, const FDamageEvent& 
 {
 	const UDamageType* DmgTypeCDO = DamageEvent.DamageTypeClass->GetDefaultObject<UDamageType>();
 	const float ImpulseScale = DmgTypeCDO->DamageImpulse;
-
+	
 	UCharacterMovementComponent* CharacterMovement = GetCharacterMovement();
 	if (ImpulseScale > 3.0f && CharacterMovement != NULL)
 	{
@@ -74,26 +74,28 @@ FVector ADashCharacter::GetPawnViewLocation() const
 void ADashCharacter::PostNetReceiveLocationAndRotation()
 {
 	// Always consider Location as changed if we were spawned this tick as in that case our replicated Location was set as part of spawning, before PreNetReceive().
-	if (ReplicatedMovement.Location == GetActorLocation() && ReplicatedMovement.Rotation == GetActorRotation() && CreationTime != GetWorld()->TimeSeconds)
+	if (GetReplicatedMovement().Location == GetActorLocation() && GetReplicatedMovement().Rotation == GetActorRotation() && CreationTime != GetWorld()->TimeSeconds)
 	{
 		return;
 	}
 
-	if (Role == ROLE_SimulatedProxy)
+	if (GetLocalRole() == ROLE_SimulatedProxy)
 	{
 		const FVector OldLocation = GetActorLocation();
 		const FQuat OldRotation = GetActorQuat();
-		const FQuat NewRotation = ReplicatedMovement.Rotation.Quaternion();
+		const FQuat NewRotation = GetReplicatedMovement().Rotation.Quaternion();
 
 		// Correction to make sure pawn doesn't penetrate floor after replication rounding.
-		ReplicatedMovement.Location += NewRotation.GetAxisZ() * 0.01f;
+		auto RepMovement = GetReplicatedMovement();
+		RepMovement.Location += NewRotation.GetAxisZ() * 0.01f;
+		SetReplicatedMovement(RepMovement);
 
-		SetActorLocationAndRotation(ReplicatedMovement.Location, ReplicatedMovement.Rotation, /*bSweep=*/ false);
+		SetActorLocationAndRotation(GetReplicatedMovement().Location, GetReplicatedMovement().Rotation, /*bSweep=*/ false);
 
 		INetworkPredictionInterface* PredictionInterface = Cast<INetworkPredictionInterface>(GetMovementComponent());
 		if (PredictionInterface)
 		{
-			PredictionInterface->SmoothCorrection(OldLocation, OldRotation, ReplicatedMovement.Location, NewRotation);
+			PredictionInterface->SmoothCorrection(OldLocation, OldRotation, GetReplicatedMovement().Location, NewRotation);
 		}
 	}
 }

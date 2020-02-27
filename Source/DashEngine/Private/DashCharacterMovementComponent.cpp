@@ -362,13 +362,13 @@ void UDashCharacterMovementComponent::SimulateMovement(float DeltaSeconds)
 		return;
 	}
 
-	const bool bIsSimulatedProxy = (CharacterOwner->Role == ROLE_SimulatedProxy);
+	const bool bIsSimulatedProxy = (CharacterOwner->GetLocalRole() == ROLE_SimulatedProxy);
 
 	// Workaround for replication not being updated initially.
 	if (bIsSimulatedProxy &&
-		CharacterOwner->ReplicatedMovement.Location.IsZero() &&
-		CharacterOwner->ReplicatedMovement.Rotation.IsZero() &&
-		CharacterOwner->ReplicatedMovement.LinearVelocity.IsZero())
+		CharacterOwner->GetReplicatedBasedMovement().Location.IsZero() &&
+		CharacterOwner->GetReplicatedBasedMovement().Rotation.IsZero() &&
+		CharacterOwner->GetReplicatedBasedMovement().MovementBase->GetPhysicsLinearVelocity().IsZero())
 	{
 		return;
 	}
@@ -685,7 +685,7 @@ void UDashCharacterMovementComponent::Crouch(bool bClientSimulation)
 		return;
 	}
 
-	if (bClientSimulation && CharacterOwner->Role == ROLE_SimulatedProxy)
+	if (bClientSimulation && CharacterOwner->GetLocalRole() == ROLE_SimulatedProxy)
 	{
 		// Restore collision size before crouching.
 		ACharacter* DefaultCharacter = CharacterOwner->GetClass()->GetDefaultObject<ACharacter>();
@@ -745,7 +745,7 @@ void UDashCharacterMovementComponent::Crouch(bool bClientSimulation)
 	CharacterOwner->OnStartCrouch(HalfHeightAdjust, ScaledHalfHeightAdjust);
 
 	// Don't smooth this change in mesh position.
-	if (bClientSimulation && CharacterOwner->Role == ROLE_SimulatedProxy)
+	if (bClientSimulation && CharacterOwner->GetLocalRole() == ROLE_SimulatedProxy)
 	{
 		FNetworkPredictionData_Client_Character* ClientData = GetPredictionData_Client_Character();
 		if (ClientData)
@@ -896,7 +896,7 @@ void UDashCharacterMovementComponent::UnCrouch(bool bClientSimulation)
 	CharacterOwner->OnEndCrouch(HalfHeightAdjust, ScaledHalfHeightAdjust);
 
 	// Don't smooth this change in mesh position.
-	if (bClientSimulation && CharacterOwner->Role == ROLE_SimulatedProxy)
+	if (bClientSimulation && CharacterOwner->GetLocalRole() == ROLE_SimulatedProxy)
 	{
 		FNetworkPredictionData_Client_Character* ClientData = GetPredictionData_Client_Character();
 		if (ClientData)
@@ -1980,7 +1980,7 @@ void UDashCharacterMovementComponent::PhysWalking(float deltaTime, int32 Iterati
 		return;
 	}
 
-	if (!CharacterOwner || (!CharacterOwner->Controller && !bRunPhysicsWithNoController && !HasAnimRootMotion() && !CurrentRootMotion.HasOverrideVelocity() && CharacterOwner->Role != ROLE_SimulatedProxy))
+	if (!CharacterOwner || (!CharacterOwner->Controller && !bRunPhysicsWithNoController && !HasAnimRootMotion() && !CurrentRootMotion.HasOverrideVelocity() && CharacterOwner->GetLocalRole() != ROLE_SimulatedProxy))
 	{
 		Acceleration = FVector::ZeroVector;
 		Velocity = FVector::ZeroVector;
@@ -2001,7 +2001,7 @@ void UDashCharacterMovementComponent::PhysWalking(float deltaTime, int32 Iterati
 	float remainingTime = deltaTime;
 
 	// Perform the move.
-	while (remainingTime >= MIN_TICK_TIME && Iterations < MaxSimulationIterations && CharacterOwner && (CharacterOwner->Controller || bRunPhysicsWithNoController || HasAnimRootMotion() || CurrentRootMotion.HasOverrideVelocity() || CharacterOwner->Role == ROLE_SimulatedProxy))
+	while (remainingTime >= MIN_TICK_TIME && Iterations < MaxSimulationIterations && CharacterOwner && (CharacterOwner->Controller || bRunPhysicsWithNoController || HasAnimRootMotion() || CurrentRootMotion.HasOverrideVelocity() || CharacterOwner->GetLocalRole() == ROLE_SimulatedProxy))
 	{
 		Iterations++;
 		bJustTeleported = false;
@@ -3295,92 +3295,111 @@ void UDashCharacterMovementComponent::DisplayDebug(UCanvas* Canvas, const FDebug
 	DisplayDebugManager.DrawString(T);
 }
 
-void UDashCharacterMovementComponent::VisualizeMovement() const
-{
-	if (CharacterOwner == nullptr)
-	{
-		return;
-	}
-
-#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
-	const FVector CapsuleUp = GetComponentAxisZ();
-	const FVector TopOfCapsule = GetActorLocation() + CapsuleUp * CharacterOwner->GetSimpleCollisionHalfHeight();
-	float HeightOffset = 0.0f;
-
-	// Position.
-	{
-		const FColor DebugColor = FColor::White;
-		const FVector DebugLocation = TopOfCapsule + CapsuleUp * HeightOffset;
-		FString DebugText = FString::Printf(TEXT("Position: %s"), *GetActorLocation().ToCompactString());
-		DrawDebugString(GetWorld(), DebugLocation, DebugText, nullptr, DebugColor, 0.0f, true);
-	}
-
-	// Velocity.
-	{
-		const FColor DebugColor = FColor::Green;
-		HeightOffset += 15.0f;
-		const FVector DebugLocation = TopOfCapsule + CapsuleUp * HeightOffset;
-		DrawDebugDirectionalArrow(GetWorld(), DebugLocation, DebugLocation + Velocity,
-			100.0f, DebugColor, false, -1.0f, (uint8)'\000', 10.0f);
-
-		FString DebugText = FString::Printf(TEXT("Velocity: %s (Speed: %.2f)"), *Velocity.ToCompactString(), Velocity.Size());
-		DrawDebugString(GetWorld(), DebugLocation + CapsuleUp * 5.0f, DebugText, nullptr, DebugColor, 0.0f, true);
-	}
-
-	// Acceleration.
-	{
-		const FColor DebugColor = FColor::Yellow;
-		HeightOffset += 15.0f;
-		const float MaxAccelerationLineLength = 200.0f;
-		const float CurrentMaxAccel = GetMaxAcceleration();
-		const float CurrentAccelAsPercentOfMaxAccel = CurrentMaxAccel > 0.0f ? Acceleration.Size() / CurrentMaxAccel : 1.0f;
-		const FVector DebugLocation = TopOfCapsule + CapsuleUp * HeightOffset;
-		DrawDebugDirectionalArrow(GetWorld(), DebugLocation,
-			DebugLocation + Acceleration.GetSafeNormal(SMALL_NUMBER) * CurrentAccelAsPercentOfMaxAccel * MaxAccelerationLineLength,
-			25.0f, DebugColor, false, -1.0f, (uint8)'\000', 8.0f);
-
-		FString DebugText = FString::Printf(TEXT("Acceleration: %s"), *Acceleration.ToCompactString());
-		DrawDebugString(GetWorld(), DebugLocation + CapsuleUp * 5.0f, DebugText, nullptr, DebugColor, 0.0f, true);
-	}
-
-	// Movement Mode.
-	{
-		const FColor DebugColor = FColor::Blue;
-		HeightOffset += 20.0f;
-		const FVector DebugLocation = TopOfCapsule + CapsuleUp * HeightOffset;
-		FString DebugText = FString::Printf(TEXT("MovementMode: %s"), *GetMovementName());
-		DrawDebugString(GetWorld(), DebugLocation, DebugText, nullptr, DebugColor, 0.0f, true);
-	}
-
-	// Root motion (additive).
-	if (CurrentRootMotion.HasAdditiveVelocity())
-	{
-		const FColor DebugColor = FColor::Cyan;
-		HeightOffset += 15.0f;
-		const FVector DebugLocation = TopOfCapsule + CapsuleUp * HeightOffset;
-
-		FVector CurrentAdditiveVelocity(FVector::ZeroVector);
-		CurrentRootMotion.AccumulateAdditiveRootMotionVelocity(0.0f, *CharacterOwner, *this, CurrentAdditiveVelocity);
-
-		DrawDebugDirectionalArrow(GetWorld(), DebugLocation, DebugLocation + CurrentAdditiveVelocity,
-			100.0f, DebugColor, false, -1.0f, (uint8)'\000', 10.0f);
-
-		FString DebugText = FString::Printf(TEXT("RootMotionAdditiveVelocity: %s (Speed: %.2f)"),
-			*CurrentAdditiveVelocity.ToCompactString(), CurrentAdditiveVelocity.Size());
-		DrawDebugString(GetWorld(), DebugLocation + CapsuleUp * 5.0f, DebugText, nullptr, DebugColor, 0.0f, true);
-	}
-
-	// Root motion (override).
-	if (CurrentRootMotion.HasOverrideVelocity())
-	{
-		const FColor DebugColor = FColor::Green;
-		HeightOffset += 15.0f;
-		const FVector DebugLocation = TopOfCapsule + CapsuleUp * HeightOffset;
-		FString DebugText = FString::Printf(TEXT("Has Override RootMotion"));
-		DrawDebugString(GetWorld(), DebugLocation, DebugText, nullptr, DebugColor, 0.0f, true);
-	}
-#endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
-}
+//float UCharacterMovementComponent::VisualizeMovement() const
+//{
+//	float HeightOffset = 0.f;
+//	const float OffsetPerElement = 10.0f;
+//	if (CharacterOwner == nullptr)
+//	{
+//		return HeightOffset;
+//	}
+//
+//#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+//	const FVector TopOfCapsule = GetActorLocation() + FVector(0.f, 0.f, CharacterOwner->GetSimpleCollisionHalfHeight());
+//	
+//	// Position
+//	{
+//		const FColor DebugColor = FColor::White;
+//		const FVector DebugLocation = TopOfCapsule + FVector(0.f,0.f,HeightOffset);
+//		FString DebugText = FString::Printf(TEXT("Position: %s"), *GetActorLocation().ToCompactString());
+//		DrawDebugString(GetWorld(), DebugLocation, DebugText, nullptr, DebugColor, 0.f, true);
+//	}
+//
+//	// Velocity
+//	{
+//		const FColor DebugColor = FColor::Green;
+//		HeightOffset += OffsetPerElement;
+//		const FVector DebugLocation = TopOfCapsule + FVector(0.f,0.f,HeightOffset);
+//		DrawDebugDirectionalArrow(GetWorld(), DebugLocation - FVector(0.f, 0.f, 5.0f), DebugLocation - FVector(0.f, 0.f, 5.0f) + Velocity,
+//			100.f, DebugColor, false, -1.f, (uint8)'\000', 10.f);
+//
+//		FString DebugText = FString::Printf(TEXT("Velocity: %s (Speed: %.2f) (Max: %.2f)"), *Velocity.ToCompactString(), Velocity.Size(), GetMaxSpeed());
+//		DrawDebugString(GetWorld(), DebugLocation, DebugText, nullptr, DebugColor, 0.f, true);
+//	}
+//
+//	// Acceleration
+//	{
+//		const FColor DebugColor = FColor::Yellow;
+//		HeightOffset += OffsetPerElement;
+//		const float MaxAccelerationLineLength = 200.f;
+//		const float CurrentMaxAccel = GetMaxAcceleration();
+//		const float CurrentAccelAsPercentOfMaxAccel = CurrentMaxAccel > 0.f ? Acceleration.Size() / CurrentMaxAccel : 1.f;
+//		const FVector DebugLocation = TopOfCapsule + FVector(0.f,0.f,HeightOffset);
+//		DrawDebugDirectionalArrow(GetWorld(), DebugLocation - FVector(0.f, 0.f, 5.0f), 
+//			DebugLocation - FVector(0.f, 0.f, 5.0f) + Acceleration.GetSafeNormal(SMALL_NUMBER) * CurrentAccelAsPercentOfMaxAccel * MaxAccelerationLineLength,
+//			25.f, DebugColor, false, -1.f, (uint8)'\000', 8.f);
+//
+//		FString DebugText = FString::Printf(TEXT("Acceleration: %s"), *Acceleration.ToCompactString());
+//		DrawDebugString(GetWorld(), DebugLocation, DebugText, nullptr, DebugColor, 0.f, true);
+//	}
+//
+//	// Movement Mode
+//	{
+//		const FColor DebugColor = FColor::Blue;
+//		HeightOffset += OffsetPerElement;
+//		FVector DebugLocation = TopOfCapsule + FVector(0.f,0.f,HeightOffset);
+//		FString DebugText = FString::Printf(TEXT("MovementMode: %s"), *GetMovementName());
+//		DrawDebugString(GetWorld(), DebugLocation, DebugText, nullptr, DebugColor, 0.f, true);
+//
+//		if (IsInWater())
+//		{
+//			HeightOffset += OffsetPerElement;
+//			DebugLocation = TopOfCapsule + FVector(0.f, 0.f, HeightOffset);
+//			DebugText = FString::Printf(TEXT("ImmersionDepth: %.2f"), ImmersionDepth());
+//			DrawDebugString(GetWorld(), DebugLocation, DebugText, nullptr, DebugColor, 0.f, true);
+//		}
+//	}
+//
+//	// Jump
+//	{
+//		const FColor DebugColor = FColor::Blue;
+//		HeightOffset += OffsetPerElement;
+//		FVector DebugLocation = TopOfCapsule + FVector(0.f, 0.f, HeightOffset);
+//		FString DebugText = FString::Printf(TEXT("bIsJumping: %d Count: %d HoldTime: %.2f"), CharacterOwner->bPressedJump, CharacterOwner->JumpCurrentCount, CharacterOwner->JumpKeyHoldTime);
+//		DrawDebugString(GetWorld(), DebugLocation, DebugText, nullptr, DebugColor, 0.f, true);
+//	}
+//
+//	// Root motion (additive)
+//	if (CurrentRootMotion.HasAdditiveVelocity())
+//	{
+//		const FColor DebugColor = FColor::Cyan;
+//		HeightOffset += OffsetPerElement;
+//		const FVector DebugLocation = TopOfCapsule + FVector(0.f,0.f,HeightOffset);
+//
+//		FVector CurrentAdditiveVelocity(FVector::ZeroVector);
+//		CurrentRootMotion.AccumulateAdditiveRootMotionVelocity(0.f, *CharacterOwner, *this, CurrentAdditiveVelocity);
+//
+//		DrawDebugDirectionalArrow(GetWorld(), DebugLocation, DebugLocation + CurrentAdditiveVelocity, 
+//			100.f, DebugColor, false, -1.f, (uint8)'\000', 10.f);
+//
+//		FString DebugText = FString::Printf(TEXT("RootMotionAdditiveVelocity: %s (Speed: %.2f)"), 
+//			*CurrentAdditiveVelocity.ToCompactString(), CurrentAdditiveVelocity.Size());
+//		DrawDebugString(GetWorld(), DebugLocation + FVector(0.f,0.f,5.f), DebugText, nullptr, DebugColor, 0.f, true);
+//	}
+//
+//	// Root motion (override)
+//	if (CurrentRootMotion.HasOverrideVelocity())
+//	{
+//		const FColor DebugColor = FColor::Green;
+//		HeightOffset += OffsetPerElement;
+//		const FVector DebugLocation = TopOfCapsule + FVector(0.f,0.f,HeightOffset);
+//		FString DebugText = FString::Printf(TEXT("Has Override RootMotion"));
+//		DrawDebugString(GetWorld(), DebugLocation, DebugText, nullptr, DebugColor, 0.f, true);
+//	}
+//#endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+//
+//	return HeightOffset;
+//}
 
 FVector UDashCharacterMovementComponent::ConstrainInputAcceleration(const FVector& InputAcceleration) const
 {
@@ -3667,7 +3686,7 @@ void UDashCharacterMovementComponent::ApplyDownwardForce(float DeltaSeconds)
 void UDashCharacterMovementComponent::CalcVelocity(float DeltaTime, float Friction, bool bFluid, float BrakingDeceleration)
 {
 	// Do not update velocity when using root motion or when SimulatedProxy - SimulatedProxy are repped their Velocity
-	if (!HasValidData() || HasAnimRootMotion() || DeltaTime < MIN_TICK_TIME || (CharacterOwner && CharacterOwner->Role == ROLE_SimulatedProxy))
+	if (!HasValidData() || HasAnimRootMotion() || DeltaTime < MIN_TICK_TIME || (CharacterOwner && CharacterOwner->GetLocalRole() == ROLE_SimulatedProxy))
 	{
 		return;
 	}

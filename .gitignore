@@ -33,7 +33,7 @@
 
 # Executables
 *.exe
-!GenerateProjectFile.exe
+!dash-gen.exe
 *.out
 *.app
 *.ipa
