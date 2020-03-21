@@ -35,6 +35,5 @@
 
 #include "DashEngine.h"
 #include "Modules/ModuleManager.h"
-#error "You're trying to compile a beta version."
 
 IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, DashEngine, "DashEngine" );
