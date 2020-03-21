@@ -9,15 +9,15 @@ It is shipped with an **Adventure Sonic** gameplay style and a **Modern Sonic** 
 
 Everything can be customized in DashEngine... From the model of your character to the amount of momentum sonic will earn.
 
-This repository host the Version **1.1.0** of DashEngine and it is maintained by GalaxySoftware, Dynu, The Perfect Donut, Novarek and all the others contributors from the community.
+This repository host the Version **1.1.0** of DashEngine and it is maintained by Marvin, Dynu, Novarek and all the others contributors from the community.
 
 ## Getting Started
 
 To install DashEngine in your computer and start building levels follow these steps.
 
 ### Prerequisites
-* Unreal Engine 4.23 *(Later 4.24...)*
-* Visual Studio 2019
+* Unreal Engine **4.24**
+* Visual Studio **2019**
 * Windows 10 build 1809* *(At least for Raytracing support)*
 
 *DashEngine was never compiled/tested on Mac OS or Linux, so if you manage to run it on one of the mentioned operating systems don't hesitate to contact us !*
@@ -26,7 +26,7 @@ To install DashEngine in your computer and start building levels follow these st
 
 ### Downloading DashEngine
 
-First, fork the repository to **your own** GitHub Repositories list, then clone the repository to your local computer using any git program like [TortoiseGit (Recommended)](https://tortoisegit.org/), [SourceTree](https://www.sourcetreeapp.com/), [GitHub Desktop](https://desktop.github.com/) or the [Git SCM](https://git-scm.com/downloads)
+First, **fork** the repository to **your own** GitHub Repositories list, then clone the repository to your local computer using any git program like [TortoiseGit (Recommended)](https://tortoisegit.org/), [SourceTree](https://www.sourcetreeapp.com/), [GitHub Desktop](https://desktop.github.com/) or the [Git SCM](https://git-scm.com/downloads)
 
 Or using the Git Bash, directly...
 
