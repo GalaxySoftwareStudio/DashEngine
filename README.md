@@ -1,6 +1,7 @@
 ![DashEngine](/.github/IMAGES/DashEngine_Banner.png?raw=true "DashEngine")
 
-<h1 align="center">DONT USE THIS UPDATE UNTIL IT IS OFFICIALLY RELEASED</h1>
+<h1 align="center">THIS IS AN ANTICIPATED RELEASE</h1>
+<h3 align="center">So you have an high chance to find bugs in this version (and even in a stable release..) so don't hesitate to report any on our discord server !</h3>
 
 ## Presentation
 DashEngine is an Unreal Engine 4 Sonic Framework/Devkit who provide all the tools, gimmicks, and gameplay needed to start building awesome (or not...) sonic gameplay based fangames.
