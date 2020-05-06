@@ -1,8 +1,5 @@
 ![DashEngine](/.github/IMAGES/DashEngine_Banner.png?raw=true "DashEngine")
 
-<h1 align="center">THIS IS AN ANTICIPATED RELEASE</h1>
-<h3 align="center">So you have an high chance to find bugs in this version (and even in a stable release..) so don't hesitate to report any on our discord server !</h3>
-
 ## Presentation
 DashEngine is an Unreal Engine 4 Sonic Framework/Devkit who provide all the tools, gimmicks, and gameplay needed to start building awesome (or not...) sonic gameplay based fangames.
 It is shipped with an **Adventure Sonic** gameplay style and a **Modern Sonic** gameplay style. *And with some tweaks you can even create a* ***Classic Sonic*** *gameplay style in a 2.5D world !*
@@ -16,8 +13,8 @@ This repository host the Version **1.1.0** of DashEngine and it is maintained by
 To install DashEngine in your computer and start building levels follow these steps.
 
 ### Prerequisites
-* Unreal Engine **4.24**
-* Visual Studio **2019**
+* Unreal Engine **4.25**
+* Visual Studio **2019 (16.5)** - Any edition
 * Windows 10 build 1809* *(At least for Raytracing support)*
 
 *DashEngine was never compiled/tested on Mac OS or Linux, so if you manage to run it on one of the mentioned operating systems don't hesitate to contact us !*
