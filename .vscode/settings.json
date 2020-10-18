@@ -1,0 +1,12 @@
+{
+	"files.exclude": {
+		"D:/DashEngine/GitHubSynced_Version/.git": true,
+		"D:/DashEngine/GitHubSynced_Version/.github": true,
+		"D:/DashEngine/GitHubSynced_Version/.vs": true,
+		"D:/DashEngine/GitHubSynced_Version/.vscode": true,
+		"D:/DashEngine/GitHubSynced_Version/Assets": true,
+		"D:/DashEngine/GitHubSynced_Version/Content": true,
+		"D:/DashEngine/GitHubSynced_Version/Intermediate": true,
+		"D:/DashEngine/GitHubSynced_Version/Saved": true
+	}
+}
