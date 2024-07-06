@@ -1,3 +1,5 @@
+# DEPRECATED : Use this version instead (Community version) : [DashEngine 1.3](https://github.com/YakuzaBalooza/Dash-Engine-1.3)
+
 ![DashEngine](/.github/IMAGES/DashEngine_Banner.png?raw=true "DashEngine")
 
 ## Presentation
